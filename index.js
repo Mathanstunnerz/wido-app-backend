@@ -11,8 +11,8 @@ const app = express();
 const PORT = process.env.PORT;
 app.use(cors());
 app.use(express.json());
-// const MONGO_URL = "mongodb://127.0.0.1";
-const MONGO_URL = process.env.MONGO_URL;
+const MONGO_URL = "mongodb://127.0.0.1";
+// const MONGO_URL = process.env.MONGO_URL;
 const client = new MongoClient(MONGO_URL); 
 await client.connect(); 
 console.log("Mongo is connected !!!  ");
@@ -28,6 +28,16 @@ app.get("/Searchbar",   async function (request, response) {
   const data = await client .db("wido").collection("userdata").find({}).toArray()
   response.send(data)
 });
+app.get("/Checkfollowing/:usertoken/:followingusertoken",   async function (request, response) {
+  const data = await client .db("wido").collection("userdata").findOne({usertoken : request.params.usertoken, "following.following_id" :request.params.followingusertoken})
+  if(data){
+    response.send({ message :"following"})
+    console.log("following")
+  }else{
+    response.send({ message :"follow"})
+    console.log("follow")
+  }
+});
 app.get("/Homeitem",   async function (request, response) {
   const data = await client .db("wido").collection("postdata").find({}).toArray()
   response.send(data)
@@ -36,7 +46,8 @@ app.post("/folowers/:usertoken/:currentuser",   async function (request, respons
   const fgh = request.body
   const currentuser ={
      following_id : request.params.usertoken,
-     follow_id :fgh.follow_id
+     follow_id :fgh.follow_id,
+     follow_check: fgh.follow_check
   }
   const checkfolowing = await client .db("wido").collection("userdata").findOne({ usertoken : request.params.currentuser, "following.following_id": request.params.usertoken })
                      
@@ -49,13 +60,22 @@ app.post("/folowers/:usertoken/:currentuser",   async function (request, respons
       response.status(404).send("Following is already")
       // console.log("Following is already")
     }
-  console.log(checkfolowing)
+
   
 });
 app.put("/folowers/remove/:usertoken/:follow_id/:followerid",   async function (request, response) {
 
   const checkfolowing = await client .db("wido").collection("userdata").updateOne({ usertoken : request.params.usertoken},{$pull:{followers: {follow_id: request.params.follow_id  }}})
   const checkfolowing2 = await client .db("wido").collection("userdata").updateOne({ usertoken : request.params.followerid},{$pull:{ following : {follow_id: request.params.follow_id  }}})
+  
+  response.send(checkfolowing)
+  console.log(checkfolowing)
+  
+});
+app.put("/folowing2/remove/:usertoken/:followerid",   async function (request, response) {
+
+  const checkfolowing = await client .db("wido").collection("userdata").updateOne({ usertoken : request.params.usertoken},{$pull:{following : { following_id: request.params.followerid }}})
+  const checkfolowing2 = await client .db("wido").collection("userdata").updateOne({ usertoken : request.params.followerid},{$pull:{followers : {follower_id: request.params.usertoken }}})
   
   response.send(checkfolowing)
   console.log(checkfolowing)
