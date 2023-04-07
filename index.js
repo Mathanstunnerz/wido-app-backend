@@ -9,8 +9,8 @@ const app = express();
 const PORT = process.env.PORT;
 app.use(cors());
 app.use(express.json());
-const MONGO_URL = "mongodb://127.0.0.1";
-// const MONGO_URL = process.env.MONGO_URL;
+// const MONGO_URL = "mongodb://127.0.0.1"
+const MONGO_URL = process.env.MONGO_URL;
 const client = new MongoClient(MONGO_URL); 
 await client.connect(); 
 console.log("Mongo is connected !!!  ");
@@ -26,6 +26,16 @@ app.get("/Searchbar",   async function (request, response) {
   const data = await client .db("wido").collection("userdata").find({}).toArray()
   response.send(data)
 });
+app.get("/profilevsite",   async function (request, response) {
+  const data = await client .db("wido").collection("profilevisite").find({}).toArray()
+  response.send(data)
+});
+app.put("/profilevsite/update",   async function (request, response) {
+  const  profile = request.body
+  const data = await client .db("wido").collection("profilevisite").insertOne({},{$set :{user_id : profile.user_id} })
+  response.send(data)
+});
+
 app.get("/Checkfollowing/:usertoken/:followingusertoken",   async function (request, response) {
   const data = await client .db("wido").collection("userdata").findOne({usertoken : request.params.usertoken, "following.following_id" :request.params.followingusertoken})
   if(data){
@@ -67,7 +77,7 @@ app.put("/folowers/remove/:usertoken/:follow_id/:followerid",   async function (
   const checkfolowing2 = await client .db("wido").collection("userdata").updateOne({ usertoken : request.params.followerid},{$pull:{ following : {follow_id: request.params.follow_id  }}})
   
   response.send(checkfolowing)
-  console.log(checkfolowing)
+  // console.log(checkfolowing)
   
 });
 app.put("/folowing2/remove/:usertoken/:followerid",   async function (request, response) {
@@ -76,7 +86,7 @@ app.put("/folowing2/remove/:usertoken/:followerid",   async function (request, r
   const checkfolowing2 = await client .db("wido").collection("userdata").updateOne({ usertoken : request.params.followerid},{$pull:{followers : {follower_id: request.params.usertoken }}})
   
   response.send(checkfolowing)
-  console.log(checkfolowing)
+  // console.log(checkfolowing)
   
 });
 app.put("/folowing/remove/:usertoken/:follow_id/:followerid",   async function (request, response) {
@@ -95,7 +105,7 @@ app.put('/postuser/likeupdate/:product_id/:usertoken', async function (request, 
   const data = await client .db("wido").collection("userdata").updateOne({usertoken :request.params.usertoken,"post.post_id" : request.params.product_id },{$set:{"post.$.like" : num}})
   const data2 = await client .db("wido").collection("postdata").updateOne({post_id :request.params.product_id },{$set:{like:num}})
   response.send(data)
-  console.log(data2)
+  // console.log(data2)
 
 });
 app.put('/postuser/commentdelete/:comment_id/:usertoken/:post_id', async function (request, response) {
@@ -130,7 +140,7 @@ app.put("/UserProfilepost/:usertoken", async function (request, response) {
   // console.log(data)
   const update =  await client .db("wido").collection("userdata").updateOne({usertoken : request.params.usertoken},{ $push :{post:data} })
   const postitem = await client .db("wido").collection("postdata").insertOne(data)
-  console.log(postitem)
+  // console.log(postitem)
   response.send(update)
 });
 app.get("/Userprofile/:usertoken", async function (request, response) {
@@ -180,7 +190,7 @@ app.post("/Signup", async function (request, response) {
       .collection("userdata")
       .findOne({ name: ddd.name });
     const token = jwt.sign({ id: userCheck2._id }, process.env.SECRET_KEY);
-    console.log("token: " + token);
+    // console.log("token: " + token);
     response.send({ user_id: userCheck2.usertoken, token: token })
   }
 });
