@@ -1,7 +1,5 @@
 import express, { query } from "express"; // "type": "module"
 import { MongoClient } from "mongodb";
-import nodemailer from "nodemailer";
-import randomnumber from "random-number";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
@@ -32,10 +30,10 @@ app.get("/Checkfollowing/:usertoken/:followingusertoken",   async function (requ
   const data = await client .db("wido").collection("userdata").findOne({usertoken : request.params.usertoken, "following.following_id" :request.params.followingusertoken})
   if(data){
     response.send({ message :"following"})
-    console.log("following")
+    // console.log("following")
   }else{
     response.send({ message :"follow"})
-    console.log("follow")
+    // console.log("follow")
   }
 });
 app.get("/Homeitem",   async function (request, response) {
@@ -114,7 +112,6 @@ app.put('/postuser/commentupdate/:product_id/:usertoken', async function (reques
   const data = await client .db("wido").collection("userdata").updateOne({usertoken :request.params.usertoken,"post.post_id" : request.params.product_id },{$push:{"post.$.comments" :ddd }})
   const data2 = await client .db("wido").collection("postdata").updateOne({post_id :request.params.product_id },{$push:{comments: ddd }})
   response.send(data2)
-  // console.log("data")
 
 });
 app.get("/user/post/item/:usertoken", async function (request, response) {
